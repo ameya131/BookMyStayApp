@@ -1,8 +1,10 @@
 import java.util.*;
 
-/* Reservation Class */
+/**
+ * CLASS - Reservation
+ * Represents a confirmed booking
+ */
 class Reservation {
-
     private String guestName;
     private String roomType;
 
@@ -20,90 +22,62 @@ class Reservation {
     }
 }
 
-/* Room Inventory */
-class RoomInventory {
+/**
+ * CLASS - BookingHistory
+ * Stores confirmed reservations
+ */
+class BookingHistory {
 
-    private Map<String, Integer> availability;
+    private List<Reservation> confirmedReservations;
 
-    public RoomInventory() {
-        availability = new HashMap<>();
-        availability.put("Single", 2);
-        availability.put("Suite", 1);
+    public BookingHistory() {
+        confirmedReservations = new ArrayList<>();
     }
 
-    public int getAvailableRooms(String type) {
-        return availability.getOrDefault(type, 0);
+    public void addReservation(Reservation reservation) {
+        confirmedReservations.add(reservation);
     }
 
-    public void decrementRoom(String type) {
-        availability.put(type, availability.get(type) - 1);
+    public List<Reservation> getConfirmedReservations() {
+        return confirmedReservations;
     }
 }
 
-/* Room Allocation Service */
-class RoomAllocationService {
+/**
+ * CLASS - BookingReportService
+ * Generates report from booking history
+ */
+class BookingReportService {
 
-    private Set<String> allocatedRoomIds;
-    private Map<String, Set<String>> assignedRoomsByType;
-    private Map<String, Integer> counters;
+    public void generateReport(BookingHistory history) {
 
-    public RoomAllocationService() {
-        allocatedRoomIds = new HashSet<>();
-        assignedRoomsByType = new HashMap<>();
-        counters = new HashMap<>();
-    }
+        System.out.println("Booking History Report");
 
-    public void allocateRoom(Reservation reservation, RoomInventory inventory) {
-
-        String type = reservation.getRoomType();
-
-        if (inventory.getAvailableRooms(type) <= 0) {
-            System.out.println("No rooms available for " + type);
-            return;
+        for (Reservation r : history.getConfirmedReservations()) {
+            System.out.println("Guest: " + r.getGuestName() +
+                    ", Room Type: " + r.getRoomType());
         }
-
-        String roomId = generateRoomId(type);
-
-        allocatedRoomIds.add(roomId);
-
-        assignedRoomsByType
-                .computeIfAbsent(type, k -> new HashSet<>())
-                .add(roomId);
-
-        inventory.decrementRoom(type);
-
-        System.out.println("Booking confirmed for Guest: "
-                + reservation.getGuestName()
-                + ", Room ID: "
-                + roomId);
-    }
-
-    private String generateRoomId(String roomType) {
-
-        int count = counters.getOrDefault(roomType, 0) + 1;
-        counters.put(roomType, count);
-
-        return roomType + "-" + count;
     }
 }
 
-/* Main Class */
+/**
+ * MAIN CLASS
+ */
 public class BookMyStayApp {
 
     public static void main(String[] args) {
 
-        System.out.println("Room Allocation Processing");
+        BookingHistory history = new BookingHistory();
 
-        RoomInventory inventory = new RoomInventory();
+        // Adding confirmed bookings
+        history.addReservation(new Reservation("Abhi", "Single"));
+        history.addReservation(new Reservation("Subha", "Double"));
+        history.addReservation(new Reservation("Vannathi", "Suite"));
 
-        RoomAllocationService allocator = new RoomAllocationService();
+        BookingReportService reportService = new BookingReportService();
 
-        Reservation r1 = new Reservation("Abhi", "Single");
-        Reservation r2 = new Reservation("Subha", "Single");
-        Reservation r3 = new Reservation("Vanmathi", "Suite");
+        System.out.println("Booking History and Reporting\n");
 
-        allocator.allocateRoom(r1, inventory);
-        allocator.allocateRoom(r2, inventory);
-        allocator.allocateRoom(r3, inventory);
+        reportService.generateReport(history);
     }
 }
